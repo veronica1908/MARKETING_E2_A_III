@@ -59,25 +59,26 @@ def preprocesar():
 ###############Basado en contenido todo lo visto por el usuario Knn#############################
 def recomendar(user_id):
     
-    books_dum2, books, conn, cur= preprocesar()
+    movies_dum2, movies, conn, cur= preprocesar()
     
-    ratings=pd.read_sql('select *from ratings_final where user_id=:user',conn, params={'user':user_id})
-    l_books_r=ratings['isbn'].to_numpy()
-    books_dum2[['isbn','book_title']]=books[['isbn','book_title']]
-    books_r=books_dum2[books_dum2['isbn'].isin(l_books_r)]
-    books_r=books_r.drop(columns=['isbn','book_title'])
-    books_r["indice"]=1 ### para usar group by y que quede en formato pandas tabla de centroide
-    centroide=books_r.groupby("indice").mean()
+    ratings=pd.read_sql('select *from ratings_final where user_id=:user',conn, params={'user':user_id,})
+    l_movies_w=ratings['movie_id'].to_numpy()
+    movies_dum2[['movie_id','title']]=movies[['movie_id','title']]
+    movies_w = movies_dum2[movies_dum2['movie_id'].isin(l_movies_w['movie_id'])]
+    movies_w=movies_w.drop(columns=['movie_id','title'])
+    movies_w["indice"]=1 ### para usar group by y que quede en formato pandas tabla de centroide
+    centroide=movies_w.groupby("indice").mean()
     
     
-    books_nr=books_dum2[~books_dum2['isbn'].isin(l_books_r)]
-    books_nr=books_nr.drop(columns=['isbn','book_title'])
+    movies_nw=movies_dum2[~movies_dum2['movie_id'].isin(l_movies_w)]
+    movies_nw=movies_nw.drop(columns=['movie_id','title'])
     model=neighbors.NearestNeighbors(n_neighbors=11, metric='cosine')
-    model.fit(books_nr)
+    model.fit(movies_nw)
     dist, idlist = model.kneighbors(centroide)
-    
-    ids=idlist[0]
-    recomend_b=books.loc[ids][['book_title','isbn']]
+
+    ids=idlist[0] ### queda en un array anidado, para sacarlo
+    recomend_b=movies.loc[ids][['title','movieId']]
+    vistas=movies[movies['movieId'].isin(l_movies_w)][['title','movieId']]
     
     
     return recomend_b
