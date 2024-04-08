@@ -2,7 +2,10 @@ import numpy as np
 import pandas as pd
 import sqlite3 as sql
 import openpyxl
-
+import a_funciones as fn ## para procesamiento
+import nbformat
+from nbconvert.preprocessors import ExecutePreprocessor
+from nbconvert import HTMLExporter
 
 ####Paquete para sistema basado en contenido ####
 from sklearn.preprocessing import MinMaxScaler
@@ -12,32 +15,44 @@ from sklearn import neighbors
 def preprocesar():
 
     #### conectar_base_de_Datos#################
-    conn=sql.connect('C:\Users\cesar\Documents\GitHub\T2_Marketing\MARKETING_E2_A_III\db_moviesF')
+    conn=sql.connect('C:/Users/cesar/Documents/GitHub/T2_Marketing/MARKETING_E2_A_III/db_moviesF')
     cur=conn.cursor()
     
 
-    ######## convertir datos crudos a bases filtradas por usuarios que tengan cierto número de calificaciones
-    fn.ejecutar_sql('C:\Users\cesar\Documents\GitHub\T2_Marketing\MARKETING_E2_A_III\Preprocesamiento.ipynb', cur)
+    # Ruta al archivo .ipynb que deseas ejecutar
+    ruta_notebook = 'C:\\Users\\cesar\\Documents\\GitHub\\T2_Marketing\\MARKETING_E2_A_III\\Preprocesamiento.ipynb'
+
+    # Lee el notebook
+    with open(ruta_notebook, 'r', encoding='utf-8') as f:
+        nb = nbformat.read(f, as_version=4)
+
+    # Ejecuta el notebook
+    executepreprocessor = ExecutePreprocessor(timeout=600, kernel_name='python3')
+    executepreprocessor.preprocess(nb, {'metadata': {'path': 'notebooks/'}})
+
+    # Exporta el notebook ejecutado a HTML
+    html_exporter = HTMLExporter()
+    (body, resources) = html_exporter.from_notebook_node(nb)
 
     ##### llevar datos que cambian constantemente a python ######
-    books=pd.read_sql('select * from books_final', conn )
-    ratings=pd.read_sql('select * from ratings_final', conn)
+    movies=pd.read_sql('select * from full_ratings', conn )
+    ratings=pd.read_sql('SELECT * FROM ratings', conn)
     usuarios=pd.read_sql('select distinct (user_id) as user_id from ratings_final',conn)
 
     
     #### transformación de datos crudos - Preprocesamiento ################
-    books['year_pub']=books.year_pub.astype('int')
+    movies['year']= movies.year.astype('int')
 
     ##### escalar para que año esté en el mismo rango ###
     sc=MinMaxScaler()
-    books[["year_sc"]]=sc.fit_transform(books[['year_pub']])
+    movies[["year"]]=sc.fit_transform(movies[['year']])
 
-    ## eliminar filas que no se van a utilizar ###
-    books_dum1=books.drop(columns=['isbn','i_url','year_pub','book_title'])
+    # Convertir la lista de géneros en múltiples columnas de género binario
+    movies_dum1 = movies['genre_list'].apply(lambda x: pd.Series([1] * len(x), index=x)).fillna(0)
 
-    col_dum=['book_author','publisher']
-    books_dum2=pd.get_dummies(books_dum1,columns=col_dum)
-    return books_dum2,books, conn, cur
+    # Concatenar las nuevas columnas de género con el DataFrame original
+    movies_dum2 = pd.concat([movies.drop(columns=['movieId', 'year', 'title', 'genres', 'genre_list']), movies_dum1], axis=1)
+    return movies_dum2,movies, conn, cur
 
 ##########################################################################
 ###############Función para entrenar modelo por cada usuario ##########
