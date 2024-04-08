@@ -28,7 +28,8 @@ def preprocesar():
 
     # Ejecuta el notebook
     executepreprocessor = ExecutePreprocessor(timeout=600, kernel_name='python3')
-    executepreprocessor.preprocess(nb, {'metadata': {'path': 'notebooks/'}})
+    executepreprocessor.preprocess(nb, {'metadata': {'path': 'C:\\Users\\cesar\\Documents\\GitHub\\T2_Marketing\\MARKETING_E2_A_III\\Preprocesamiento.ipynb'}})
+
 
     # Exporta el notebook ejecutado a HTML
     html_exporter = HTMLExporter()
@@ -97,12 +98,11 @@ def main(list_user):
         
         recomendaciones_todos=pd.concat([recomendaciones_todos, recomendaciones])
 
-    recomendaciones_todos.to_excel('C:\\cod\\LEA3_RecSys\\salidas\\reco\\recomendaciones.xlsx')
-    recomendaciones_todos.to_csv('C:\\cod\\LEA3_RecSys\\salidas\\reco\\recomendaciones.csv')
-
+    recomendaciones_todos.to_excel('C:\\Users\\cesar\\Documents\\GitHub\\T2_Marketing\\MARKETING_E2_A_III\\Salidas\\recomendaciones.xlsx')
+    recomendaciones_todos.to_csv('C:\\Users\\cesar\\Documents\\GitHub\\T2_Marketing\\MARKETING_E2_A_III\\Salidas\\recomendaciones.csv')
 
 if __name__=="__main__":
-    list_user=[52853,31226,167471,8066 ]
+    list_user=[6,70,110,157 ]
     main(list_user)
     
 
