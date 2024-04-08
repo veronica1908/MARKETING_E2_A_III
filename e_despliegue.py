@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import sqlite3 as sql
-import a_funciones as fn ## para procesamiento
 import openpyxl
 
 
@@ -13,12 +12,12 @@ from sklearn import neighbors
 def preprocesar():
 
     #### conectar_base_de_Datos#################
-    conn=sql.connect('C:\\cod\\LEA3_RecSys\\data\\db_books2')
+    conn=sql.connect('C:\Users\cesar\Documents\GitHub\T2_Marketing\MARKETING_E2_A_III\db_moviesF')
     cur=conn.cursor()
     
 
     ######## convertir datos crudos a bases filtradas por usuarios que tengan cierto número de calificaciones
-    fn.ejecutar_sql('C:\\cod\\LEA3_RecSys\\preprocesamientos.sql', cur)
+    fn.ejecutar_sql('C:\Users\cesar\Documents\GitHub\T2_Marketing\MARKETING_E2_A_III\Preprocesamiento.ipynb', cur)
 
     ##### llevar datos que cambian constantemente a python ######
     books=pd.read_sql('select * from books_final', conn )
